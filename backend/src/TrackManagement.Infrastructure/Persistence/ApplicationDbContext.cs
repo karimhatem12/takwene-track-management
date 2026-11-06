@@ -1,12 +1,19 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using TrackManagement.Application.Common.Exceptions;
 using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Domain.Entities;
+using TrackManagement.Infrastructure.Persistence.Converters;
 using TrackManagement.Infrastructure.Persistence.Seed;
 
 namespace TrackManagement.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
+    // SQL Server error numbers for "duplicate key" on a unique index / unique constraint.
+    private const int UniqueIndexViolation = 2601;
+    private const int UniqueConstraintViolation = 2627;
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
@@ -17,6 +24,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TrackDistribution> TrackDistributions => Set<TrackDistribution>();
     public DbSet<User> Users => Set<User>();
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // Every DateTime in the model is UTC (see UtcDateTimeConverter).
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Picks up every IEntityTypeConfiguration<T> in Persistence/Configurations.
@@ -24,5 +37,25 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Sample artists, tracks, DSPs and distributions (see Persistence/Seed/SampleData.cs).
         modelBuilder.SeedSampleData();
+    }
+
+    /// <summary>
+    /// Services check for duplicates before saving, but two requests at the same moment
+    /// can both pass that check. The unique index then rejects the second insert;
+    /// we turn that SQL error into a ConflictException (409) instead of a 500.
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException
+                                           {
+                                               Number: UniqueIndexViolation or UniqueConstraintViolation
+                                           })
+        {
+            throw new ConflictException("The record conflicts with existing data (duplicate value).");
+        }
     }
 }
