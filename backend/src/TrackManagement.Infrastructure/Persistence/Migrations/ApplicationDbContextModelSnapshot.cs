@@ -36,6 +36,14 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("nchar(2)")
                         .IsFixedLength();
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -45,6 +53,13 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
@@ -58,6 +73,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 1,
                             Country = "EG",
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Email = "nour.elsayed@example.com",
                             Name = "Nour El Sayed"
                         },
@@ -65,6 +82,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 2,
                             Country = "LB",
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Email = "layla.haddad@example.com",
                             Name = "Layla Haddad"
                         },
@@ -72,6 +91,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 3,
                             Country = "SA",
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Email = "omar.alrashid@example.com",
                             Name = "Omar Al-Rashid"
                         },
@@ -79,9 +100,63 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 4,
                             Country = "MA",
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Email = "yasmine.benali@example.com",
                             Name = "Yasmine Benali"
                         });
+                });
+
+            modelBuilder.Entity("TrackManagement.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Changes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EntityName", "EntityId");
+
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("TrackManagement.Domain.Entities.Dsp", b =>
@@ -138,6 +213,14 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                     b.Property<int>("ArtistId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<string>("Genre")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -162,6 +245,13 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ArtistId");
@@ -180,6 +270,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 1,
                             ArtistId = 1,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Arabic Pop",
                             Isrc = "EGTKW2400001",
                             ReleaseDate = new DateOnly(2024, 3, 15),
@@ -190,6 +282,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 2,
                             ArtistId = 1,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Mahraganat",
                             Isrc = "EGTKW2400002",
                             ReleaseDate = new DateOnly(2024, 9, 1),
@@ -200,6 +294,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 3,
                             ArtistId = 2,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Indie",
                             Isrc = "LBTKW2300001",
                             ReleaseDate = new DateOnly(2023, 11, 20),
@@ -210,6 +306,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 4,
                             ArtistId = 2,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "R&B",
                             Isrc = "LBTKW2500001",
                             ReleaseDate = new DateOnly(2025, 2, 14),
@@ -220,6 +318,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 5,
                             ArtistId = 3,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Khaleeji",
                             Isrc = "SATKW2400001",
                             ReleaseDate = new DateOnly(2024, 6, 10),
@@ -230,6 +330,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 6,
                             ArtistId = 3,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Hip Hop",
                             Isrc = "SATKW2500001",
                             ReleaseDate = new DateOnly(2025, 5, 5),
@@ -240,6 +342,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 7,
                             ArtistId = 3,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Electronic",
                             Isrc = "SATKW2600001",
                             ReleaseDate = new DateOnly(2026, 12, 1),
@@ -250,6 +354,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 8,
                             ArtistId = 4,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Rai",
                             Isrc = "MATKW2400001",
                             ReleaseDate = new DateOnly(2024, 4, 22),
@@ -260,6 +366,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 9,
                             ArtistId = 4,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Electronic",
                             Isrc = "MATKW2500001",
                             ReleaseDate = new DateOnly(2025, 8, 30),
@@ -270,6 +378,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         {
                             Id = 10,
                             ArtistId = 4,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             Genre = "Arabic Pop",
                             Isrc = "MATKW2600001",
                             ReleaseDate = new DateOnly(2026, 10, 1),
@@ -286,6 +396,14 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<int>("DspId")
                         .HasColumnType("int");
 
@@ -300,6 +418,13 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                     b.Property<int>("TrackId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DspId");
@@ -313,6 +438,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 1,
+                            CreatedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 1,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -321,6 +448,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 2,
+                            CreatedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 2,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -329,6 +458,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 3,
+                            CreatedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 3,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -337,6 +468,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 4,
+                            CreatedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 4,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 3, 1, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -345,6 +478,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 5,
+                            CreatedAt = new DateTime(2024, 8, 20, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 1,
                             Status = "Pending",
                             SubmittedAt = new DateTime(2024, 8, 20, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -353,6 +488,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 6,
+                            CreatedAt = new DateTime(2024, 8, 20, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 4,
                             Status = "Pending",
                             SubmittedAt = new DateTime(2024, 8, 20, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -361,6 +498,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 7,
+                            CreatedAt = new DateTime(2023, 11, 5, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 1,
                             Status = "Live",
                             SubmittedAt = new DateTime(2023, 11, 5, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -369,6 +508,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 8,
+                            CreatedAt = new DateTime(2023, 11, 5, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 2,
                             Status = "Rejected",
                             SubmittedAt = new DateTime(2023, 11, 5, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -377,6 +518,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 9,
+                            CreatedAt = new DateTime(2023, 11, 5, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 4,
                             Status = "Live",
                             SubmittedAt = new DateTime(2023, 11, 5, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -385,6 +528,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 10,
+                            CreatedAt = new DateTime(2024, 5, 28, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 1,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 5, 28, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -393,6 +538,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 11,
+                            CreatedAt = new DateTime(2024, 5, 28, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 3,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 5, 28, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -401,6 +548,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 12,
+                            CreatedAt = new DateTime(2024, 5, 28, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 4,
                             Status = "Pending",
                             SubmittedAt = new DateTime(2024, 5, 28, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -409,6 +558,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 13,
+                            CreatedAt = new DateTime(2025, 4, 25, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 1,
                             Status = "Rejected",
                             SubmittedAt = new DateTime(2025, 4, 25, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -417,6 +568,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 14,
+                            CreatedAt = new DateTime(2025, 4, 25, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 2,
                             Status = "Pending",
                             SubmittedAt = new DateTime(2025, 4, 25, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -425,6 +578,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 15,
+                            CreatedAt = new DateTime(2024, 4, 10, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 1,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 4, 10, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -433,6 +588,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 16,
+                            CreatedAt = new DateTime(2024, 4, 10, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 2,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 4, 10, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -441,6 +598,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 17,
+                            CreatedAt = new DateTime(2024, 4, 10, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 4,
                             Status = "Live",
                             SubmittedAt = new DateTime(2024, 4, 10, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -449,6 +608,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 18,
+                            CreatedAt = new DateTime(2025, 8, 15, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 3,
                             Status = "Pending",
                             SubmittedAt = new DateTime(2025, 8, 15, 9, 0, 0, 0, DateTimeKind.Utc),
@@ -457,6 +618,8 @@ namespace TrackManagement.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 19,
+                            CreatedAt = new DateTime(2025, 8, 15, 9, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
                             DspId = 4,
                             Status = "Pending",
                             SubmittedAt = new DateTime(2025, 8, 15, 9, 0, 0, 0, DateTimeKind.Utc),

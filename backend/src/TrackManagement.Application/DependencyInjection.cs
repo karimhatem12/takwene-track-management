@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TrackManagement.Application.Artists;
+using TrackManagement.Application.Audit;
 using TrackManagement.Application.Auth;
 using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Application.Tracks;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<ITrackService, TrackService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
 
         return services;
     }

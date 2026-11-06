@@ -1,4 +1,5 @@
 using TrackManagement.Domain.Enums;
+using TrackManagement.Domain.Common;
 using TrackManagement.Domain.Exceptions;
 
 namespace TrackManagement.Domain.Entities;
@@ -6,7 +7,7 @@ namespace TrackManagement.Domain.Entities;
 /// <summary>
 /// One submission of a track to one DSP. Created only through <see cref="Track.Distribute"/>.
 /// </summary>
-public class TrackDistribution
+public class TrackDistribution : AuditableEntity
 {
     public int Id { get; private set; }
     public int TrackId { get; private set; }

@@ -6,7 +6,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TrackManagement.Api.Middleware;
 using TrackManagement.Api.Security;
+using TrackManagement.Api.Services;
 using TrackManagement.Application;
+using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Infrastructure;
 using TrackManagement.Infrastructure.Authentication;
 using TrackManagement.Infrastructure.Persistence.Seed;
@@ -16,6 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Application + Infrastructure layers (services, validators, EF Core, JWT, password hashing).
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// The signed-in user (from the JWT), used by the audit trail to record who made each change.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

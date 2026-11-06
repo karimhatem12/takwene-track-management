@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Infrastructure.Authentication;
 using TrackManagement.Infrastructure.Persistence;
+using TrackManagement.Infrastructure.Persistence.Interceptors;
 
 namespace TrackManagement.Infrastructure;
 
@@ -14,9 +15,13 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        // Fills audit columns and writes AuditLogs rows on every SaveChanges (one per DbContext scope).
+        services.AddScoped<AuditInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
             options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+                    sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName))
+                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 

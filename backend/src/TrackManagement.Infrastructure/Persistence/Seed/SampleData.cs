@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TrackManagement.Domain.Entities;
 using TrackManagement.Domain.Enums;
+using TrackManagement.Infrastructure.Persistence.Interceptors;
 
 namespace TrackManagement.Infrastructure.Persistence.Seed;
 
@@ -15,6 +16,10 @@ namespace TrackManagement.Infrastructure.Persistence.Seed;
 /// </summary>
 internal static class SampleData
 {
+    // Audit columns for seeded rows: created by "system" (see AuditInterceptor.SystemUser).
+    private const string SeededBy = AuditInterceptor.SystemUser;
+    private static readonly DateTime SeededAt = new(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc);
+
     public static void SeedSampleData(this ModelBuilder modelBuilder)
     {
         SeedDsps(modelBuilder);
@@ -43,10 +48,10 @@ internal static class SampleData
     private static void SeedArtists(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Artist>().HasData(
-            new { Id = 1, Name = "Nour El Sayed", Email = "nour.elsayed@example.com", Country = "EG" },
-            new { Id = 2, Name = "Layla Haddad", Email = "layla.haddad@example.com", Country = "LB" },
-            new { Id = 3, Name = "Omar Al-Rashid", Email = "omar.alrashid@example.com", Country = "SA" },
-            new { Id = 4, Name = "Yasmine Benali", Email = "yasmine.benali@example.com", Country = "MA" });
+            new { Id = 1, Name = "Nour El Sayed", Email = "nour.elsayed@example.com", Country = "EG", CreatedAt = SeededAt, CreatedBy = SeededBy },
+            new { Id = 2, Name = "Layla Haddad", Email = "layla.haddad@example.com", Country = "LB", CreatedAt = SeededAt, CreatedBy = SeededBy },
+            new { Id = 3, Name = "Omar Al-Rashid", Email = "omar.alrashid@example.com", Country = "SA", CreatedAt = SeededAt, CreatedBy = SeededBy },
+            new { Id = 4, Name = "Yasmine Benali", Email = "yasmine.benali@example.com", Country = "MA", CreatedAt = SeededAt, CreatedBy = SeededBy });
     }
 
     private static void SeedTracks(ModelBuilder modelBuilder)
@@ -68,7 +73,7 @@ internal static class SampleData
     {
         var id = 0;
         object Dist(int trackId, int dspId, DateTime submittedAt, DistributionStatus status) =>
-            new { Id = ++id, TrackId = trackId, DspId = dspId, SubmittedAt = submittedAt, Status = status };
+            new { Id = ++id, TrackId = trackId, DspId = dspId, SubmittedAt = submittedAt, Status = status, CreatedAt = submittedAt, CreatedBy = SeededBy };
 
         var mar24 = Utc(2024, 3, 1);
         var aug24 = Utc(2024, 8, 20);
@@ -109,7 +114,7 @@ internal static class SampleData
 
     private static object Track(int id, int artistId, string title, string isrc, DateOnly releaseDate,
         string genre, TrackStatus status) =>
-        new { Id = id, ArtistId = artistId, Title = title, Isrc = isrc, ReleaseDate = releaseDate, Genre = genre, Status = status };
+        new { Id = id, ArtistId = artistId, Title = title, Isrc = isrc, ReleaseDate = releaseDate, Genre = genre, Status = status, CreatedAt = SeededAt, CreatedBy = SeededBy };
 
     private static DateTime Utc(int year, int month, int day) =>
         new(year, month, day, 9, 0, 0, DateTimeKind.Utc);

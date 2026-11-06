@@ -23,7 +23,11 @@ public record TrackDetailsDto(
     DateOnly ReleaseDate,
     string Genre,
     TrackStatus Status,
-    IReadOnlyList<TrackDistributionDto> Distributions);
+    IReadOnlyList<TrackDistributionDto> Distributions,
+    DateTime CreatedAt,
+    string CreatedBy,
+    DateTime? UpdatedAt,
+    string? UpdatedBy);
 
 public record TrackDistributionDto(
     int Id,

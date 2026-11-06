@@ -14,6 +14,7 @@ public interface IApplicationDbContext
     DbSet<Dsp> Dsps { get; }
     DbSet<TrackDistribution> TrackDistributions { get; }
     DbSet<User> Users { get; }
+    DbSet<AuditLog> AuditLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

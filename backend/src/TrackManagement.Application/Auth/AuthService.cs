@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using TrackManagement.Application.Common.Exceptions;
 using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Domain.Entities;
+using TrackManagement.Domain.Enums;
 
 namespace TrackManagement.Application.Auth;
 
@@ -57,6 +59,7 @@ public class AuthService : IAuthService
         _db.Users.Add(user);
         await _db.SaveChangesAsync(cancellationToken);
 
+        await RecordAuthEventAsync(user, AuditAction.Registered, cancellationToken);
         return CreateResponse(user);
     }
 
@@ -77,7 +80,27 @@ public class AuthService : IAuthService
         if (!_passwordHasher.Verify(user.PasswordHash, request.Password))
             throw new UnauthorizedException(InvalidCredentialsMessage);
 
+        await RecordAuthEventAsync(user, AuditAction.LoggedIn, cancellationToken);
         return CreateResponse(user);
+    }
+
+    /// <summary>
+    /// Successful sign-ins and registrations go to the audit trail. Failed attempts are not logged
+    /// here (they would flood the table); the login rate limiter covers brute-force attempts.
+    /// </summary>
+    private async Task RecordAuthEventAsync(User user, AuditAction action, CancellationToken cancellationToken)
+    {
+        _db.AuditLogs.Add(AuditLog.Create(
+            user.Id,
+            user.Email,
+            action,
+            nameof(User),
+            user.Id.ToString(),
+            changes: null,
+            _timeProvider.GetUtcNow().UtcDateTime,
+            Activity.Current?.TraceId.ToString()));
+
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
     private AuthResponse CreateResponse(User user)

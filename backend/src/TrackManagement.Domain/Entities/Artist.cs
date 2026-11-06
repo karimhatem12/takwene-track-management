@@ -1,8 +1,9 @@
+using TrackManagement.Domain.Common;
 using TrackManagement.Domain.Exceptions;
 
 namespace TrackManagement.Domain.Entities;
 
-public class Artist
+public class Artist : AuditableEntity
 {
     private readonly List<Track> _tracks = new();
 

@@ -1,9 +1,10 @@
 using TrackManagement.Domain.Enums;
+using TrackManagement.Domain.Common;
 using TrackManagement.Domain.Exceptions;
 
 namespace TrackManagement.Domain.Entities;
 
-public class Track
+public class Track : AuditableEntity
 {
     private readonly List<TrackDistribution> _distributions = new();
 

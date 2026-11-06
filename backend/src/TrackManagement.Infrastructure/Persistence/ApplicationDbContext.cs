@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TrackManagement.Application.Common.Exceptions;
 using TrackManagement.Application.Common.Interfaces;
+using TrackManagement.Domain.Common;
 using TrackManagement.Domain.Entities;
 using TrackManagement.Infrastructure.Persistence.Converters;
 using TrackManagement.Infrastructure.Persistence.Seed;
@@ -23,6 +24,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Dsp> Dsps => Set<Dsp>();
     public DbSet<TrackDistribution> TrackDistributions => Set<TrackDistribution>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -34,6 +36,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         // Picks up every IEntityTypeConfiguration<T> in Persistence/Configurations.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Same column setup for the audit columns on every AuditableEntity (Artist, Track, TrackDistribution).
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                     .Where(t => typeof(AuditableEntity).IsAssignableFrom(t.ClrType)))
+        {
+            var entity = modelBuilder.Entity(entityType.ClrType);
+            entity.Property(nameof(AuditableEntity.CreatedAt)).HasColumnType("datetime2");
+            entity.Property(nameof(AuditableEntity.CreatedBy)).HasMaxLength(256).IsRequired();
+            entity.Property(nameof(AuditableEntity.UpdatedAt)).HasColumnType("datetime2");
+            entity.Property(nameof(AuditableEntity.UpdatedBy)).HasMaxLength(256);
+        }
 
         // Sample artists, tracks, DSPs and distributions (see Persistence/Seed/SampleData.cs).
         modelBuilder.SeedSampleData();

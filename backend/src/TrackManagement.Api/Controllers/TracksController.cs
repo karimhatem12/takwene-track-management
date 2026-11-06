@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TrackManagement.Application.Audit;
 using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Application.Tracks;
 
@@ -10,10 +11,12 @@ namespace TrackManagement.Api.Controllers;
 public class TracksController : ControllerBase
 {
     private readonly ITrackService _trackService;
+    private readonly IAuditLogService _auditLogService;
 
-    public TracksController(ITrackService trackService)
+    public TracksController(ITrackService trackService, IAuditLogService auditLogService)
     {
         _trackService = trackService;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>List tracks, optionally filtered by artist, genre and/or status.</summary>
@@ -31,6 +34,13 @@ public class TracksController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TrackDetailsDto>> GetById(int id, CancellationToken cancellationToken) =>
         Ok(await _trackService.GetByIdAsync(id, cancellationToken));
+
+    /// <summary>Who changed this track and its DSP distributions, and what changed. Newest first.</summary>
+    [HttpGet("{id:int}/history")]
+    [ProducesResponseType<IReadOnlyList<AuditLogDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyList<AuditLogDto>>> GetHistory(int id, CancellationToken cancellationToken) =>
+        Ok(await _auditLogService.GetTrackHistoryAsync(id, cancellationToken));
 
     /// <summary>Create a track for an artist. New tracks start as Draft.</summary>
     [HttpPost]

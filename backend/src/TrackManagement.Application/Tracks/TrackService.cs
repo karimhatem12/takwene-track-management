@@ -144,5 +144,9 @@ public class TrackService : ITrackService
             track.Distributions
                 .OrderBy(d => d.Dsp.Name)
                 .Select(d => new TrackDistributionDto(d.Id, d.DspId, d.Dsp.Name, d.SubmittedAt, d.Status))
-                .ToList());
+                .ToList(),
+            track.CreatedAt,
+            track.CreatedBy,
+            track.UpdatedAt,
+            track.UpdatedBy);
 }
