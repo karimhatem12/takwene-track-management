@@ -34,6 +34,12 @@ public class GlobalExceptionHandler : IExceptionHandler
                 Status = StatusCodes.Status400BadRequest,
                 Title = "One or more validation errors occurred."
             },
+            UnauthorizedException => new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized.",
+                Detail = exception.Message
+            },
             NotFoundException => new ProblemDetails
             {
                 Status = StatusCodes.Status404NotFound,

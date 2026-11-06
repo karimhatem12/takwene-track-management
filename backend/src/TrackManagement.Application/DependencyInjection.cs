@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TrackManagement.Application.Artists;
+using TrackManagement.Application.Auth;
 using TrackManagement.Application.Common.Interfaces;
 using TrackManagement.Application.Tracks;
 
@@ -18,6 +19,7 @@ public static class DependencyInjection
         // Injected instead of DateTime.UtcNow so time can be faked in tests.
         services.AddSingleton(TimeProvider.System);
 
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<ITrackService, TrackService>();
 
