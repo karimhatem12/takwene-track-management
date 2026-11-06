@@ -1,0 +1,214 @@
+.back {
+  margin: 0 0 12px;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.mono {
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.track-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 2px 0 0;
+  }
+}
+
+.panel,
+.card {
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.card {
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+  }
+
+  > p {
+    margin: 0 0 12px;
+  }
+}
+
+.panel.error {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.3rem;
+  }
+
+  p {
+    margin: 0 0 12px;
+  }
+}
+
+.error-text {
+  margin: 0;
+  color: var(--danger);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+
+  dt {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  dd {
+    margin: 2px 0 0;
+  }
+}
+
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  th {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr + tr {
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* History: a simple vertical timeline, newest first. */
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    padding: 0 0 16px 20px;
+    border-left: 2px solid var(--border);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+  }
+}
+
+.when {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+
+  .muted {
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+.changes {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+
+  li {
+    overflow-wrap: anywhere;
+  }
+}
+
+.field {
+  display: inline-block;
+  min-width: 110px;
+  color: var(--text-muted);
+}
+
+.old {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* Phones: the distributions table becomes label/value rows. */
+@media (max-width: 640px) {
+  .panel,
+  .card {
+    padding: 16px;
+  }
+
+  .grid {
+    thead {
+      display: none;
+    }
+
+    tr {
+      display: block;
+      padding: 8px 0;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+    }
+  }
+}

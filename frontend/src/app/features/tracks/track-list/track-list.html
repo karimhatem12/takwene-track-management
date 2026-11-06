@@ -1,0 +1,66 @@
+<div class="page-header">
+  <div>
+    <h1>Tracks</h1>
+    @if (tracks(); as list) {
+      <p class="muted">{{ list.length }} {{ list.length === 1 ? 'track' : 'tracks' }}{{ selectedStatus() ? ' with status ' + selectedStatus() : '' }}</p>
+    }
+  </div>
+
+  <label class="filter">
+    <span>Status</span>
+    <!-- [selected] on each option (not [value] on the select): the options are rendered after the
+         select, so a value set on the select itself is lost when the page opens with ?status=. -->
+    <select (change)="onStatusChange($any($event.target).value)">
+      <option value="" [selected]="!selectedStatus()">All statuses</option>
+      @for (s of statuses; track s) {
+        <option [value]="s" [selected]="s === selectedStatus()">{{ s }}</option>
+      }
+    </select>
+  </label>
+</div>
+
+@if (errorMessage(); as message) {
+  <div class="panel error" role="alert">
+    <p>{{ message }}</p>
+    <button type="button" class="secondary" (click)="retry()">Try again</button>
+  </div>
+} @else if (tracks(); as list) {
+  @if (list.length === 0) {
+    <div class="panel muted">
+      No tracks{{ selectedStatus() ? ' with status ' + selectedStatus() : '' }}.
+      @if (selectedStatus()) {
+        <button type="button" class="link" (click)="onStatusChange('')">Show all</button>
+      }
+    </div>
+  } @else {
+    <table class="tracks">
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Artist</th>
+          <th scope="col">Genre</th>
+          <th scope="col">Release date</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (track of list; track track.id) {
+          <tr>
+            <td data-label="Title">
+              <a [routerLink]="['/tracks', track.id]" class="title">{{ track.title }}</a>
+              <span class="isrc">{{ track.isrc }}</span>
+            </td>
+            <td data-label="Artist">{{ track.artistName }}</td>
+            <td data-label="Genre">{{ track.genre }}</td>
+            <!-- releaseDate is a plain date ("2024-03-15"). DatePipe reads that as a LOCAL date, so no
+                 timezone argument: forcing 'UTC' here shifted every date one day back (east of UTC). -->
+            <td data-label="Release date">{{ track.releaseDate | date: 'mediumDate' }}</td>
+            <td data-label="Status"><app-status-badge [status]="track.status" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+} @else {
+  <div class="panel muted" role="status">Loading tracks…</div>
+}

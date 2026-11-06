@@ -7,5 +7,10 @@ export const routes: Routes = [
     title: 'Tracks · Takwene',
     loadComponent: () => import('./features/tracks/track-list/track-list').then((m) => m.TrackList),
   },
+  {
+    path: 'tracks/:id',
+    title: 'Track · Takwene',
+    loadComponent: () => import('./features/tracks/track-detail/track-detail').then((m) => m.TrackDetail),
+  },
   { path: '**', redirectTo: 'tracks' },
 ];

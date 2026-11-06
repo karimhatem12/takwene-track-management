@@ -1,0 +1,117 @@
+<p class="back"><a routerLink="/tracks">← Back to tracks</a></p>
+
+@if (error(); as e) {
+  <div class="panel error" role="alert">
+    @if (e.status === 404) {
+      <h1>Track not found</h1>
+      <p>It may have been removed, or the link is wrong.</p>
+    } @else {
+      <p>{{ e.message }}</p>
+      <button type="button" class="secondary" (click)="retry()">Try again</button>
+    }
+  </div>
+} @else if (track(); as t) {
+  <header class="track-header">
+    <div>
+      <h1>{{ t.title }}</h1>
+      <p class="muted">{{ t.artistName }}</p>
+    </div>
+    <app-status-badge [status]="t.status" />
+  </header>
+
+  <section class="card">
+    <h2>Details</h2>
+    <dl class="facts">
+      <div><dt>ISRC</dt><dd class="mono">{{ t.isrc | isrc }}</dd></div>
+      <div><dt>Artist</dt><dd>{{ t.artistName }}</dd></div>
+      <div><dt>Genre</dt><dd>{{ t.genre }}</dd></div>
+      <!-- Plain date ("2024-03-15"): DatePipe reads it as a local date, so no timezone argument. -->
+      <div><dt>Release date</dt><dd>{{ t.releaseDate | date: 'mediumDate' }}</dd></div>
+      <div>
+        <dt>Created</dt>
+        <dd>{{ t.createdAt | date: 'medium' }} <span class="muted">by {{ t.createdBy }}</span></dd>
+      </div>
+      <div>
+        <dt>Last updated</dt>
+        <dd>
+          @if (t.updatedAt) {
+            {{ t.updatedAt | date: 'medium' }} <span class="muted">by {{ t.updatedBy }}</span>
+          } @else {
+            <span class="muted">Never</span>
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>DSP distributions</h2>
+    @if (t.distributions.length === 0) {
+      <p class="muted">Not sent to any DSP yet.</p>
+    } @else {
+      <p class="muted">Live on {{ liveCount() }} of {{ t.distributions.length }} DSPs.</p>
+      <table class="grid">
+        <thead>
+          <tr>
+            <th scope="col">DSP</th>
+            <th scope="col">Submitted</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of t.distributions; track d.id) {
+            <tr>
+              <td data-label="DSP" class="strong">{{ d.dspName }}</td>
+              <td data-label="Submitted">{{ d.submittedAt | date: 'medium' }}</td>
+              <td data-label="Status"><app-status-badge [status]="d.status" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <section class="card">
+    <h2>History</h2>
+    @if (historyError(); as message) {
+      <p class="error-text" role="alert">Couldn't load the history: {{ message }}</p>
+    } @else if (history(); as items) {
+      @if (items.length === 0) {
+        <p class="muted">
+          No changes recorded yet. Sample data is loaded by a migration, so it has no history until someone changes it.
+        </p>
+      } @else {
+        <ol class="timeline">
+          @for (item of items; track item.id) {
+            <li>
+              <div class="when">
+                <strong>{{ item.summary }}</strong>
+                <span class="muted">{{ item.timestamp | date: 'medium' }} · {{ item.userEmail }}</span>
+              </div>
+              @if (item.changes.length) {
+                <ul class="changes">
+                  @for (c of item.changes; track c.field) {
+                    <li>
+                      <span class="field">{{ c.field }}</span>
+                      @if (c.old !== null && c.new !== null) {
+                        <span class="old">{{ c.old }}</span> → <span>{{ c.new }}</span>
+                      } @else if (c.new !== null) {
+                        <span>{{ c.new }}</span>
+                      } @else {
+                        <span class="old">{{ c.old }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ol>
+      }
+    } @else {
+      <p class="muted" role="status">Loading history…</p>
+    }
+  </section>
+} @else {
+  <div class="panel muted" role="status">Loading track…</div>
+}
