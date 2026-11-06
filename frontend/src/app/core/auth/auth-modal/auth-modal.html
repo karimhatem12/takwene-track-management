@@ -1,0 +1,79 @@
+<div class="backdrop">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <h2 id="auth-title">Takwene Track Management</h2>
+    <p class="subtitle">
+      {{ mode() === 'login' ? 'Sign in to manage your catalogue.' : 'Create an account to get started.' }}
+    </p>
+
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" [class.active]="mode() === 'login'"
+              [attr.aria-selected]="mode() === 'login'" (click)="switchTo('login')">
+        Sign in
+      </button>
+      <button type="button" role="tab" [class.active]="mode() === 'register'"
+              [attr.aria-selected]="mode() === 'register'" (click)="switchTo('register')">
+        Register
+      </button>
+    </div>
+
+    @if (serverError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+
+    @if (mode() === 'login') {
+      <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+        <label>
+          Email
+          <input #firstField type="email" formControlName="email" autocomplete="username" />
+        </label>
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
+
+        <label>
+          Password
+          <input type="password" formControlName="password" autocomplete="current-password" />
+        </label>
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+          <span class="field-error">Password is required.</span>
+        }
+
+        <button type="submit" class="primary" [disabled]="submitting()">
+          {{ submitting() ? 'Signing in…' : 'Sign in' }}
+        </button>
+      </form>
+    } @else {
+      <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" novalidate>
+        <label>
+          Full name
+          <input #firstField type="text" formControlName="fullName" autocomplete="name" />
+        </label>
+        @if (registerForm.controls.fullName.touched && registerForm.controls.fullName.invalid) {
+          <span class="field-error">Full name is required.</span>
+        }
+
+        <label>
+          Email
+          <input type="email" formControlName="email" autocomplete="username" />
+        </label>
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
+
+        <label>
+          Password
+          <input type="password" formControlName="password" autocomplete="new-password" />
+        </label>
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+          <span class="field-error">At least 8 characters, with at least one letter and one number.</span>
+        } @else {
+          <span class="hint">At least 8 characters, with a letter and a number.</span>
+        }
+
+        <button type="submit" class="primary" [disabled]="submitting()">
+          {{ submitting() ? 'Creating account…' : 'Create account' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

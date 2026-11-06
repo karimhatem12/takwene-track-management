@@ -1,0 +1,79 @@
+/* Global styles: colour tokens and base elements. No design system, just enough to be clear. */
+
+:root {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-muted: #eef1f6;
+  --border: #d9dee7;
+  --text: #1c2333;
+  --text-muted: #5f6b7e;
+  --primary: #5b3cc4;
+  --primary-hover: #4a2fa6;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+
+  /* Status colours, used by the status badges. */
+  --status-draft: #5f6b7e;
+  --status-draft-bg: #eef1f6;
+  --status-submitted: #9a5b00;
+  --status-submitted-bg: #fff4e0;
+  --status-distributed: #146c43;
+  --status-distributed-bg: #e3f6ec;
+  --status-rejected: #b42318;
+  --status-rejected-bg: #fdecea;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--primary);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button.primary {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+button.secondary {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+
+  &:hover {
+    background: var(--surface-muted);
+  }
+}

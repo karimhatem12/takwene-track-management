@@ -1,0 +1,24 @@
+<header class="app-header">
+  <a routerLink="/tracks" class="brand">
+    <span class="logo" aria-hidden="true">♪</span>
+    Takwene <span class="brand-sub">Track Management</span>
+  </a>
+
+  @if (auth.user(); as user) {
+    <div class="user">
+      <span class="user-name" [title]="user.email">{{ user.fullName }}</span>
+      <button type="button" class="secondary" (click)="auth.logout()">Sign out</button>
+    </div>
+  }
+</header>
+
+<main class="app-main">
+  <!-- Pages only load (and call the API) once someone is signed in. -->
+  @if (auth.isAuthenticated()) {
+    <router-outlet />
+  }
+</main>
+
+@if (!auth.isAuthenticated()) {
+  <app-auth-modal />
+}
