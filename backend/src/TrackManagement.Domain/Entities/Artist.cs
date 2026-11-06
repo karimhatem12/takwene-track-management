@@ -25,6 +25,14 @@ public class Artist : AuditableEntity
 
     public static Artist Create(string name, string email, string country)
     {
+        var artist = new Artist();
+        artist.Update(name, email, country);
+        return artist;
+    }
+
+    /// <summary>Changes the artist's details, with the same normalization as <see cref="Create"/>.</summary>
+    public void Update(string name, string email, string country)
+    {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Artist name is required.");
         if (string.IsNullOrWhiteSpace(email))
@@ -32,11 +40,10 @@ public class Artist : AuditableEntity
         if (string.IsNullOrWhiteSpace(country))
             throw new DomainException("Artist country is required.");
 
-        return new Artist
-        {
-            Name = name.Trim(),
-            Email = email.Trim().ToLowerInvariant(),
-            Country = country.Trim().ToUpperInvariant()
-        };
+        Name = name.Trim();
+        Email = NormalizeEmail(email);
+        Country = country.Trim().ToUpperInvariant();
     }
+
+    public static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
 }

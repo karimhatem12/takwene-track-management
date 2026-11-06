@@ -32,4 +32,14 @@ public class ArtistsController : ControllerBase
         var artist = await _artistService.CreateAsync(request, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, artist);
     }
+
+    /// <summary>Edit an artist's name, email and country.</summary>
+    [HttpPut("{id:int}")]
+    [ProducesResponseType<ArtistDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ArtistDto>> Update(
+        int id, UpdateArtistRequest request, CancellationToken cancellationToken) =>
+        Ok(await _artistService.UpdateAsync(id, request, cancellationToken));
 }

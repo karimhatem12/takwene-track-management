@@ -6,4 +6,5 @@ public interface IArtistService
 {
     Task<IReadOnlyList<ArtistDto>> GetAllAsync(CancellationToken cancellationToken);
     Task<ArtistDto> CreateAsync(CreateArtistRequest request, CancellationToken cancellationToken);
+    Task<ArtistDto> UpdateAsync(int id, UpdateArtistRequest request, CancellationToken cancellationToken);
 }

@@ -89,3 +89,28 @@ public class RegisterRequestValidatorTests
         Assert.Equal(expectedValid, result.IsValid);
     }
 }
+
+public class UpdateRequestValidatorTests
+{
+    [Fact]
+    public void Track_update_uses_the_same_rules_as_create()
+    {
+        var result = new UpdateTrackRequestValidator().Validate(
+            new UpdateTrackRequest(ArtistId: 0, Title: "", Isrc: "BAD", ReleaseDate: null, Genre: ""));
+
+        Assert.Equal(
+            new[] { "ArtistId", "Genre", "Isrc", "ReleaseDate", "Title" },
+            result.Errors.Select(e => e.PropertyName).OrderBy(p => p));
+    }
+
+    [Fact]
+    public void Artist_update_uses_the_same_rules_as_create()
+    {
+        var result = new UpdateArtistRequestValidator().Validate(
+            new UpdateArtistRequest(Name: "", Email: "not-an-email", Country: "EGY"));
+
+        Assert.Equal(
+            new[] { "Country", "Email", "Name" },
+            result.Errors.Select(e => e.PropertyName).OrderBy(p => p));
+    }
+}

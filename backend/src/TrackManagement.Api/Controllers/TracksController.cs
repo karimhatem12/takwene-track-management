@@ -53,6 +53,16 @@ public class TracksController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = track.Id }, track);
     }
 
+    /// <summary>Edit a track. Title, genre and release date can change any time; artist and ISRC only while Draft.</summary>
+    [HttpPut("{id:int}")]
+    [ProducesResponseType<TrackDetailsDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<TrackDetailsDto>> Update(
+        int id, UpdateTrackRequest request, CancellationToken cancellationToken) =>
+        Ok(await _trackService.UpdateAsync(id, request, cancellationToken));
+
     /// <summary>Submit a track to one or more DSPs. Each DSP can receive a track only once.</summary>
     [HttpPost("{id:int}/distribute")]
     [ProducesResponseType<TrackDetailsDto>(StatusCodes.Status200OK)]

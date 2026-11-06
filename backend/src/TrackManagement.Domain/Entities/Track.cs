@@ -36,19 +36,45 @@ public class Track : AuditableEntity
             throw new DomainException("Track title is required.");
         if (string.IsNullOrWhiteSpace(isrc))
             throw new DomainException("ISRC is required.");
-        if (string.IsNullOrWhiteSpace(genre))
-            throw new DomainException("Genre is required.");
-
         return new Track
         {
             ArtistId = artistId,
             Title = title.Trim(),
             Isrc = NormalizeIsrc(isrc),
             ReleaseDate = releaseDate,
-            Genre = genre.Trim(),
+            Genre = ToKnownGenre(genre),
             Status = TrackStatus.Draft
         };
     }
+
+    /// <summary>
+    /// Edits the track's metadata. Title, genre and release date can change at any time.
+    /// The artist and ISRC identify the recording at the DSPs, so they can only change
+    /// while the track is still a Draft (i.e. before it was sent anywhere).
+    /// </summary>
+    public void UpdateDetails(int artistId, string title, string isrc, DateOnly releaseDate, string genre)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("Track title is required.");
+        if (string.IsNullOrWhiteSpace(isrc))
+            throw new DomainException("ISRC is required.");
+        var knownGenre = ToKnownGenre(genre);
+        var normalizedIsrc = NormalizeIsrc(isrc);
+        if (Status != TrackStatus.Draft && (artistId != ArtistId || normalizedIsrc != Isrc))
+            throw new DomainException(
+                $"The artist and ISRC can only be changed while the track is a Draft. This track is {Status}.");
+
+        ArtistId = artistId;
+        Title = title.Trim();
+        Isrc = normalizedIsrc;
+        ReleaseDate = releaseDate;
+        Genre = knownGenre;
+    }
+
+    /// <summary>Only genres from <see cref="Genres.All"/> are allowed, stored in their canonical spelling.</summary>
+    private static string ToKnownGenre(string genre) =>
+        Genres.ToCanonical(genre)
+        ?? throw new DomainException($"'{genre}' is not a known genre. Allowed: {string.Join(", ", Genres.All)}.");
 
     /// <summary>
     /// "EG-A01-24-00001" / "ega012400001" -> "EGA012400001".

@@ -12,6 +12,7 @@ public class TrackService : ITrackService
     private readonly IApplicationDbContext _db;
     private readonly TimeProvider _timeProvider;
     private readonly IValidator<CreateTrackRequest> _createValidator;
+    private readonly IValidator<UpdateTrackRequest> _updateValidator;
     private readonly IValidator<DistributeTrackRequest> _distributeValidator;
     private readonly IValidator<UpdateTrackStatusRequest> _statusValidator;
 
@@ -19,12 +20,14 @@ public class TrackService : ITrackService
         IApplicationDbContext db,
         TimeProvider timeProvider,
         IValidator<CreateTrackRequest> createValidator,
+        IValidator<UpdateTrackRequest> updateValidator,
         IValidator<DistributeTrackRequest> distributeValidator,
         IValidator<UpdateTrackStatusRequest> statusValidator)
     {
         _db = db;
         _timeProvider = timeProvider;
         _createValidator = createValidator;
+        _updateValidator = updateValidator;
         _distributeValidator = distributeValidator;
         _statusValidator = statusValidator;
     }
@@ -70,21 +73,34 @@ public class TrackService : ITrackService
     {
         await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-        if (!await _db.Artists.AnyAsync(a => a.Id == request.ArtistId, cancellationToken))
-            throw ValidationExtensions.FieldError(
-                nameof(request.ArtistId), $"Artist with id '{request.ArtistId}' does not exist.");
+        await EnsureArtistExistsAsync(request.ArtistId, cancellationToken);
 
         var track = Track.Create(
             request.ArtistId, request.Title, request.Isrc, request.ReleaseDate!.Value, request.Genre);
 
-        // Friendly 409 for the common case; the unique index still protects against races.
-        if (await _db.Tracks.AnyAsync(t => t.Isrc == track.Isrc, cancellationToken))
-            throw new ConflictException($"A track with ISRC '{track.Isrc}' already exists.");
+        await EnsureIsrcIsFreeAsync(track.Isrc, exceptTrackId: null, cancellationToken);
 
         _db.Tracks.Add(track);
         await _db.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(track.Id, cancellationToken);
+    }
+
+    public async Task<TrackDetailsDto> UpdateAsync(int id, UpdateTrackRequest request, CancellationToken cancellationToken)
+    {
+        await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+        var track = await _db.Tracks.FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new NotFoundException("Track", id);
+
+        await EnsureArtistExistsAsync(request.ArtistId, cancellationToken);
+        await EnsureIsrcIsFreeAsync(Track.NormalizeIsrc(request.Isrc), exceptTrackId: id, cancellationToken);
+
+        // The domain decides what may change for the track's current status.
+        track.UpdateDetails(request.ArtistId, request.Title, request.Isrc, request.ReleaseDate!.Value, request.Genre);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return await GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<TrackDetailsDto> DistributeAsync(
@@ -129,6 +145,20 @@ public class TrackService : ITrackService
         await _db.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
+    }
+
+    private async Task EnsureArtistExistsAsync(int artistId, CancellationToken cancellationToken)
+    {
+        if (!await _db.Artists.AnyAsync(a => a.Id == artistId, cancellationToken))
+            throw ValidationExtensions.FieldError(
+                nameof(CreateTrackRequest.ArtistId), $"Artist with id '{artistId}' does not exist.");
+    }
+
+    // Friendly 409 for the common case; the unique index still protects against races.
+    private async Task EnsureIsrcIsFreeAsync(string isrc, int? exceptTrackId, CancellationToken cancellationToken)
+    {
+        if (await _db.Tracks.AnyAsync(t => t.Isrc == isrc && t.Id != exceptTrackId, cancellationToken))
+            throw new ConflictException($"A track with ISRC '{isrc}' already exists.");
     }
 
     private static TrackDetailsDto ToDetails(Track track) =>

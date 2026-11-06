@@ -46,6 +46,17 @@ public record CreateTrackRequest(
     DateOnly? ReleaseDate,
     string Genre);
 
+/// <summary>
+/// Full replacement of a track's editable fields. ArtistId and Isrc may only differ
+/// from the current values while the track is a Draft.
+/// </summary>
+public record UpdateTrackRequest(
+    int ArtistId,
+    string Title,
+    string Isrc,
+    DateOnly? ReleaseDate,
+    string Genre);
+
 public record DistributeTrackRequest(IReadOnlyList<int> DspIds);
 
 public record UpdateTrackStatusRequest(TrackStatus? Status);
