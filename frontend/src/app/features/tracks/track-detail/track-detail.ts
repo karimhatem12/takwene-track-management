@@ -2,11 +2,15 @@ import { DatePipe, formatDate } from '@angular/common';
 import { Component, computed, inject, input, LOCALE_ID, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { finalize, of, skip, switchMap } from 'rxjs';
 import { LoadState, toLoadState } from '../../../core/http/load-state';
-import { AuditLogDto, TrackDetailsDto } from '../../../core/models/api.models';
+import { toErrorMessage } from '../../../core/http/problem-details';
+import { AuditLogDto, nextStatus, TrackDetailsDto, TrackStatus } from '../../../core/models/api.models';
+import { Dialog } from '../../../shared/dialog/dialog';
 import { IsrcPipe } from '../../../shared/format/isrc.pipe';
 import { StatusBadge } from '../../../shared/status-badge/status-badge';
+import { DistributeDialog } from '../distribute-dialog/distribute-dialog';
+import { TrackForm } from '../track-form/track-form';
 import { TrackService } from '../track.service';
 
 /** One audit entry, ready to display. */
@@ -43,7 +47,7 @@ const TRACK_SUMMARY: Record<string, string> = {
  */
 @Component({
   selector: 'app-track-detail',
-  imports: [RouterLink, DatePipe, StatusBadge, IsrcPipe],
+  imports: [RouterLink, DatePipe, StatusBadge, IsrcPipe, Dialog, TrackForm, DistributeDialog],
   templateUrl: './track-detail.html',
   styleUrl: './track-detail.scss',
 })
@@ -61,15 +65,16 @@ export class TrackDetail {
     return Number.isInteger(value) && value > 0 ? value : null;
   });
 
-  private readonly reload = signal(0);
-  private readonly request = computed(() => ({ id: this.trackId(), reload: this.reload() }));
+  /** silent = refresh after an action: keep showing the page instead of "Loading…". */
+  private readonly reload = signal({ count: 0, silent: false });
+  private readonly request = computed(() => ({ id: this.trackId(), ...this.reload() }));
 
   private readonly detailState = toSignal(
     toObservable(this.request).pipe(
-      switchMap(({ id }) =>
+      switchMap(({ id, silent }) =>
         id === null
           ? of<LoadState<TrackDetailsDto>>({ kind: 'error', message: 'Track not found.', status: 404 })
-          : toLoadState(this.trackService.getById(id)),
+          : toLoadState(this.trackService.getById(id)).pipe(skip(silent ? 1 : 0)),
       ),
     ),
     { initialValue: { kind: 'loading' } as LoadState<TrackDetailsDto> },
@@ -78,10 +83,10 @@ export class TrackDetail {
   // History is loaded separately: if it fails, the track itself still shows.
   private readonly historyState = toSignal(
     toObservable(this.request).pipe(
-      switchMap(({ id }) =>
+      switchMap(({ id, silent }) =>
         id === null
           ? of<LoadState<AuditLogDto[]>>({ kind: 'loading' })
-          : toLoadState(this.trackService.getHistory(id)),
+          : toLoadState(this.trackService.getHistory(id)).pipe(skip(silent ? 1 : 0)),
       ),
     ),
     { initialValue: { kind: 'loading' } as LoadState<AuditLogDto[]> },
@@ -116,8 +121,57 @@ export class TrackDetail {
     return s.data.map((log) => this.toHistoryItem(log, dspByDistributionId));
   });
 
+  // ---- Actions: edit, send to DSPs, move status forward ----
+
+  protected readonly editing = signal(false);
+  protected readonly distributing = signal(false);
+  protected readonly confirmingStatus = signal(false);
+  protected readonly statusSubmitting = signal(false);
+  protected readonly statusError = signal<string | null>(null);
+
+  protected readonly nextStatus = computed(() => {
+    const track = this.track();
+    return track ? nextStatus(track.status) : null;
+  });
+
+  /** Moving to Distributed needs a Live DSP; Live/Rejected come from the DSPs, not from this app. */
+  protected readonly blockedReason = computed(() =>
+    this.nextStatus() === 'Distributed' && this.liveCount() === 0
+      ? 'A track can only be marked Distributed once it is Live on at least one DSP. ' +
+        'Live and Rejected are reported by the DSPs, so this button will work once one of them goes live.'
+      : null,
+  );
+
   protected retry(): void {
-    this.reload.update((n) => n + 1);
+    this.reload.update((r) => ({ count: r.count + 1, silent: false }));
+  }
+
+  /** After a successful action: refresh the track and its history without a loading flash. */
+  protected afterAction(): void {
+    this.editing.set(false);
+    this.distributing.set(false);
+    this.confirmingStatus.set(false);
+    this.reload.update((r) => ({ count: r.count + 1, silent: true }));
+  }
+
+  protected openStatusDialog(): void {
+    this.statusError.set(null);
+    this.confirmingStatus.set(true);
+  }
+
+  protected changeStatus(status: TrackStatus): void {
+    const track = this.track();
+    if (!track) return;
+
+    this.statusSubmitting.set(true);
+    this.statusError.set(null);
+    this.trackService
+      .changeStatus(track.id, status)
+      .pipe(finalize(() => this.statusSubmitting.set(false)))
+      .subscribe({
+        next: () => this.afterAction(),
+        error: (error: unknown) => this.statusError.set(toErrorMessage(error)),
+      });
   }
 
   private toHistoryItem(log: AuditLogDto, dspByDistributionId: Map<string, string>): HistoryItem {

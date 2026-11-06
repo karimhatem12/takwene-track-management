@@ -12,5 +12,10 @@ export const routes: Routes = [
     title: 'Track · Takwene',
     loadComponent: () => import('./features/tracks/track-detail/track-detail').then((m) => m.TrackDetail),
   },
+  {
+    path: 'artists',
+    title: 'Artists · Takwene',
+    loadComponent: () => import('./features/artists/artist-list/artist-list').then((m) => m.ArtistList),
+  },
   { path: '**', redirectTo: 'tracks' },
 ];

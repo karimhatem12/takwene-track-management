@@ -5,6 +5,10 @@
   </a>
 
   @if (auth.user(); as user) {
+    <nav class="nav" aria-label="Main">
+      <a routerLink="/tracks" routerLinkActive="active">Tracks</a>
+      <a routerLink="/artists" routerLinkActive="active">Artists</a>
+    </nav>
     <div class="user">
       <span class="user-name" [title]="user.email">{{ user.fullName }}</span>
       <button type="button" class="secondary" (click)="auth.logout()">Sign out</button>

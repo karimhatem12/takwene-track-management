@@ -93,3 +93,40 @@ export interface AuditLogDto {
   entityId: string;
   changes: Record<string, FieldChange> | null;
 }
+
+/** GET /api/artists */
+export interface ArtistDto {
+  id: number;
+  name: string;
+  email: string;
+  country: string; // ISO 3166-1 alpha-2, upper case
+  trackCount: number;
+}
+
+/** Body of POST /api/artists and PUT /api/artists/{id}. */
+export interface SaveArtistRequest {
+  name: string;
+  email: string;
+  country: string;
+}
+
+/** Body of POST /api/tracks and PUT /api/tracks/{id}. */
+export interface SaveTrackRequest {
+  artistId: number;
+  title: string;
+  isrc: string;
+  releaseDate: string; // yyyy-MM-dd
+  genre: string;
+}
+
+/** GET /api/dsps */
+export interface DspDto {
+  id: number;
+  name: string;
+}
+
+/** The status a track can move to next, or null when it is already Distributed. */
+export function nextStatus(status: TrackStatus): TrackStatus | null {
+  const index = TRACK_STATUSES.indexOf(status);
+  return TRACK_STATUSES[index + 1] ?? null;
+}

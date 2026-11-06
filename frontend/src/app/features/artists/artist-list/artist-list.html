@@ -1,0 +1,57 @@
+<div class="page-header">
+  <div>
+    <h1>Artists</h1>
+    @if (artists(); as list) {
+      <p class="muted">{{ list.length }} {{ list.length === 1 ? 'artist' : 'artists' }}</p>
+    }
+  </div>
+  <button type="button" class="primary" (click)="editing.set(null)">+ Add artist</button>
+</div>
+
+@if (errorMessage(); as message) {
+  <div class="panel error" role="alert">
+    <p>{{ message }}</p>
+    <button type="button" class="secondary" (click)="retry()">Try again</button>
+  </div>
+} @else if (artists(); as list) {
+  @if (list.length === 0) {
+    <div class="panel muted">No artists yet. Add the first one.</div>
+  } @else {
+    <table class="artists">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Country</th>
+          <th scope="col">Tracks</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (artist of list; track artist.id) {
+          <tr>
+            <td data-label="Name" class="name">{{ artist.name }}</td>
+            <td data-label="Email">{{ artist.email }}</td>
+            <td data-label="Country">{{ artist.country }}</td>
+            <td data-label="Tracks">
+              @if (artist.trackCount > 0) {
+                <a routerLink="/tracks" [queryParams]="{ artistId: artist.id }">{{ artist.trackCount }}</a>
+              } @else {
+                0
+              }
+            </td>
+            <td class="actions">
+              <button type="button" class="secondary" (click)="editing.set(artist)">Edit</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+} @else {
+  <div class="panel muted" role="status">Loading artists…</div>
+}
+
+@if (editing() !== undefined) {
+  <app-artist-form [artist]="editing() ?? null" (saved)="onSaved()" (closed)="editing.set(undefined)" />
+}

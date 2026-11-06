@@ -1,0 +1,42 @@
+<app-dialog [title]="artist() ? 'Edit artist' : 'Add artist'" [busy]="submitting()" (closed)="closed.emit()">
+  <form id="artist-form" class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (serverError(); as message) {
+      <p class="form-alert" role="alert">{{ message }}</p>
+    }
+
+    <label class="field">
+      <span>Name</span>
+      <input formControlName="name" autocomplete="off" />
+      @if (form.controls.name.touched && form.controls.name.invalid) {
+        <span class="field-error">Name is required (up to 200 characters).</span>
+      }
+    </label>
+
+    <label class="field">
+      <span>Email</span>
+      <input type="email" formControlName="email" autocomplete="off" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <span class="field-error">Enter a valid email address.</span>
+      } @else {
+        <span class="field-hint">Each artist needs a different email.</span>
+      }
+    </label>
+
+    <label class="field">
+      <span>Country</span>
+      <input formControlName="country" maxlength="2" placeholder="EG" autocomplete="off" />
+      @if (form.controls.country.touched && form.controls.country.invalid) {
+        <span class="field-error">Use a 2-letter country code, e.g. EG or SA.</span>
+      } @else {
+        <span class="field-hint">2-letter ISO code, e.g. EG, SA, AE, MA.</span>
+      }
+    </label>
+  </form>
+
+  <div dialog-actions class="form-actions">
+    <button type="button" class="secondary" [disabled]="submitting()" (click)="closed.emit()">Cancel</button>
+    <button type="submit" form="artist-form" class="primary" [disabled]="submitting()">
+      {{ submitting() ? 'Saving…' : artist() ? 'Save changes' : 'Add artist' }}
+    </button>
+  </div>
+</app-dialog>

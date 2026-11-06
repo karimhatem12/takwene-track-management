@@ -33,6 +33,31 @@
   color: var(--text-muted);
 }
 
+.nav {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+  margin-left: 16px;
+
+  a {
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--surface-muted);
+      color: var(--text);
+    }
+
+    &.active {
+      background: var(--surface-muted);
+      color: var(--primary);
+    }
+  }
+}
+
 .user {
   display: flex;
   align-items: center;
@@ -56,6 +81,20 @@
   }
 
   .brand-sub {
+    display: none;
+  }
+
+  .app-header {
+    flex-wrap: wrap;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+  }
+
+  .user-name {
     display: none;
   }
 }

@@ -13,10 +13,16 @@
 } @else if (track(); as t) {
   <header class="track-header">
     <div>
-      <h1>{{ t.title }}</h1>
+      <h1>{{ t.title }} <app-status-badge [status]="t.status" /></h1>
       <p class="muted">{{ t.artistName }}</p>
     </div>
-    <app-status-badge [status]="t.status" />
+    <div class="actions">
+      <button type="button" class="secondary" (click)="editing.set(true)">Edit</button>
+      <button type="button" class="secondary" (click)="distributing.set(true)">Send to DSPs</button>
+      @if (nextStatus(); as next) {
+        <button type="button" class="primary" (click)="openStatusDialog()">Move to {{ next }}</button>
+      }
+    </div>
   </header>
 
   <section class="card">
@@ -114,4 +120,42 @@
   </section>
 } @else {
   <div class="panel muted" role="status">Loading track…</div>
+}
+
+@if (track(); as t) {
+  @if (editing()) {
+    <app-track-form [track]="t" (saved)="afterAction()" (closed)="editing.set(false)" />
+  }
+
+  @if (distributing()) {
+    <app-distribute-dialog [track]="t" (saved)="afterAction()" (closed)="distributing.set(false)" />
+  }
+
+  @if (confirmingStatus() && nextStatus(); as next) {
+    <app-dialog [title]="'Move to ' + next + '?'" [busy]="statusSubmitting()" (closed)="confirmingStatus.set(false)">
+      <div class="form">
+        <p class="status-move">
+          <app-status-badge [status]="t.status" /> → <app-status-badge [status]="next" />
+        </p>
+        @if (blockedReason(); as reason) {
+          <p class="form-alert" role="alert">{{ reason }}</p>
+        } @else {
+          <p>Status only moves forward, so this can't be undone.</p>
+        }
+        @if (statusError(); as message) {
+          <p class="form-alert" role="alert">{{ message }}</p>
+        }
+      </div>
+      <div dialog-actions class="form-actions">
+        <button type="button" class="secondary" [disabled]="statusSubmitting()" (click)="confirmingStatus.set(false)">
+          {{ blockedReason() ? 'Close' : 'Cancel' }}
+        </button>
+        @if (!blockedReason()) {
+          <button type="button" class="primary" [disabled]="statusSubmitting()" (click)="changeStatus(next)">
+            {{ statusSubmitting() ? 'Saving…' : 'Move to ' + next }}
+          </button>
+        }
+      </div>
+    </app-dialog>
+  }
 }

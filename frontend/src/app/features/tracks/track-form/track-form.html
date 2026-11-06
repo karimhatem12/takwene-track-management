@@ -1,0 +1,89 @@
+<app-dialog [title]="track() ? 'Edit track' : 'Add track'" [busy]="submitting()" (closed)="closed.emit()">
+  <form id="track-form" class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (serverError(); as message) {
+      <p class="form-alert" role="alert">{{ message }}</p>
+    }
+
+    <label class="field">
+      <span>Artist</span>
+      <select formControlName="artistId">
+        <option [ngValue]="0" disabled>
+          {{ artists() ? 'Choose an artist…' : artistsError() ? 'Could not load artists' : 'Loading artists…' }}
+        </option>
+        @for (artist of artists() ?? []; track artist.id) {
+          <option [ngValue]="artist.id">{{ artist.name }} ({{ artist.country }})</option>
+        }
+      </select>
+      @if (identityLocked()) {
+        <span class="field-hint">Locked: the track was already sent to DSPs.</span>
+      } @else if (form.controls.artistId.touched && form.controls.artistId.invalid) {
+        <span class="field-error">Choose an artist.</span>
+      } @else {
+        <span class="field-hint">
+          Not in the list?
+          <button type="button" class="link" (click)="addingArtist.set(true)">Add a new artist</button>
+        </span>
+      }
+    </label>
+
+    <label class="field">
+      <span>Title</span>
+      <input formControlName="title" autocomplete="off" />
+      @if (form.controls.title.touched && form.controls.title.invalid) {
+        <span class="field-error">Title is required (up to 200 characters).</span>
+      }
+    </label>
+
+    <label class="field">
+      <span>ISRC</span>
+      <input formControlName="isrc" placeholder="EG-TKW-24-00001" autocomplete="off" />
+      @if (identityLocked()) {
+        <span class="field-hint">Locked: the track was already sent to DSPs.</span>
+      } @else if (form.controls.isrc.touched && form.controls.isrc.invalid) {
+        <span class="field-error">Use the form CC-XXX-YY-NNNNN, e.g. EG-TKW-24-00001.</span>
+      } @else {
+        <span class="field-hint">Country, registrant, year, 5-digit number. Dashes are optional.</span>
+      }
+    </label>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Release date</span>
+        <input type="date" formControlName="releaseDate" min="1900-01-01" />
+        @if (form.controls.releaseDate.touched && form.controls.releaseDate.invalid) {
+          <span class="field-error">Release date is required.</span>
+        }
+      </label>
+
+      <label class="field">
+        <span>Genre</span>
+        <select formControlName="genre">
+          <option value="" disabled>
+            {{ genres() ? 'Choose a genre…' : genresError() ? 'Could not load genres' : 'Loading genres…' }}
+          </option>
+          @for (genre of genres() ?? []; track genre) {
+            <option [value]="genre">{{ genre }}</option>
+          }
+        </select>
+        @if (form.controls.genre.touched && form.controls.genre.invalid) {
+          <span class="field-error">Choose a genre.</span>
+        }
+      </label>
+    </div>
+
+    @if (!track()) {
+      <p class="field-hint">New tracks start as Draft.</p>
+    }
+  </form>
+
+  <div dialog-actions class="form-actions">
+    <button type="button" class="secondary" [disabled]="submitting()" (click)="closed.emit()">Cancel</button>
+    <button type="submit" form="track-form" class="primary" [disabled]="submitting()">
+      {{ submitting() ? 'Saving…' : track() ? 'Save changes' : 'Add track' }}
+    </button>
+  </div>
+</app-dialog>
+
+@if (addingArtist()) {
+  <app-artist-form (saved)="onArtistAdded($event)" (closed)="addingArtist.set(false)" />
+}

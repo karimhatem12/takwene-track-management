@@ -2,21 +2,35 @@
   <div>
     <h1>Tracks</h1>
     @if (tracks(); as list) {
-      <p class="muted">{{ list.length }} {{ list.length === 1 ? 'track' : 'tracks' }}{{ selectedStatus() ? ' with status ' + selectedStatus() : '' }}</p>
+      <p class="muted">{{ list.length }} {{ list.length === 1 ? 'track' : 'tracks' }}{{ filterSummary() }}</p>
     }
   </div>
 
-  <label class="filter">
-    <span>Status</span>
+  <div class="toolbar">
     <!-- [selected] on each option (not [value] on the select): the options are rendered after the
          select, so a value set on the select itself is lost when the page opens with ?status=. -->
-    <select (change)="onStatusChange($any($event.target).value)">
-      <option value="" [selected]="!selectedStatus()">All statuses</option>
-      @for (s of statuses; track s) {
-        <option [value]="s" [selected]="s === selectedStatus()">{{ s }}</option>
-      }
-    </select>
-  </label>
+    <label class="filter">
+      <span>Artist</span>
+      <select (change)="onFilterChange('artistId', $any($event.target).value)">
+        <option value="" [selected]="!selectedArtistId()">All artists</option>
+        @for (artist of artists(); track artist.id) {
+          <option [value]="artist.id" [selected]="artist.id === selectedArtistId()">{{ artist.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="filter">
+      <span>Status</span>
+      <select (change)="onFilterChange('status', $any($event.target).value)">
+        <option value="" [selected]="!selectedStatus()">All statuses</option>
+        @for (s of statuses; track s) {
+          <option [value]="s" [selected]="s === selectedStatus()">{{ s }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" class="primary" (click)="adding.set(true)">+ Add track</button>
+  </div>
 </div>
 
 @if (errorMessage(); as message) {
@@ -27,9 +41,9 @@
 } @else if (tracks(); as list) {
   @if (list.length === 0) {
     <div class="panel muted">
-      No tracks{{ selectedStatus() ? ' with status ' + selectedStatus() : '' }}.
-      @if (selectedStatus()) {
-        <button type="button" class="link" (click)="onStatusChange('')">Show all</button>
+      No tracks{{ filterSummary() }}.
+      @if (selectedStatus() || selectedArtistId()) {
+        <button type="button" class="link" (click)="clearFilters()">Show all</button>
       }
     </div>
   } @else {
@@ -48,7 +62,7 @@
           <tr>
             <td data-label="Title">
               <a [routerLink]="['/tracks', track.id]" class="title">{{ track.title }}</a>
-              <span class="isrc">{{ track.isrc }}</span>
+              <span class="isrc">{{ track.isrc | isrc }}</span>
             </td>
             <td data-label="Artist">{{ track.artistName }}</td>
             <td data-label="Genre">{{ track.genre }}</td>
@@ -63,4 +77,8 @@
   }
 } @else {
   <div class="panel muted" role="status">Loading tracks…</div>
+}
+
+@if (adding()) {
+  <app-track-form (saved)="onTrackAdded($event)" (closed)="adding.set(false)" />
 }

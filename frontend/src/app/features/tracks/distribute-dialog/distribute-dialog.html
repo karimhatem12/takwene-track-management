@@ -1,0 +1,43 @@
+<app-dialog title="Send to DSPs" [busy]="submitting()" (closed)="closed.emit()">
+  <div class="form">
+    <p class="field-hint">
+      Choose where to send <strong>{{ track().title }}</strong>.
+      {{ track().status === 'Draft'
+        ? 'Each DSP gets a Pending distribution and the track moves to Submitted.'
+        : 'Each DSP gets a Pending distribution.' }}
+    </p>
+
+    @if (error(); as message) {
+      <p class="form-alert" role="alert">{{ message }}</p>
+    }
+
+    @if (dsps(); as list) {
+      <fieldset class="dsp-list">
+        <legend class="visually-hidden">DSPs</legend>
+        @for (dsp of list; track dsp.id) {
+          <label class="dsp" [class.done]="alreadySent().has(dsp.id)">
+            <input
+              type="checkbox"
+              [disabled]="alreadySent().has(dsp.id) || submitting()"
+              [checked]="alreadySent().has(dsp.id) || selected().has(dsp.id)"
+              (change)="toggle(dsp.id, $any($event.target).checked)"
+            />
+            <span>{{ dsp.name }}</span>
+            @if (alreadySent().has(dsp.id)) {
+              <span class="field-hint">already sent</span>
+            }
+          </label>
+        }
+      </fieldset>
+    } @else if (!error()) {
+      <p class="field-hint" role="status">Loading DSPs…</p>
+    }
+  </div>
+
+  <div dialog-actions class="form-actions">
+    <button type="button" class="secondary" [disabled]="submitting()" (click)="closed.emit()">Cancel</button>
+    <button type="button" class="primary" [disabled]="submitting() || selected().size === 0" (click)="submit()">
+      {{ submitting() ? 'Sending…' : selected().size > 1 ? 'Send to ' + selected().size + ' DSPs' : 'Send' }}
+    </button>
+  </div>
+</app-dialog>
